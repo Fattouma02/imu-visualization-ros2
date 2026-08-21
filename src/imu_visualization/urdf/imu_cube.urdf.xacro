@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<robot name="imu_cube" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    reference_link: fixed, stationary root frame.
+    Everything else (imu_link) is expressed relative to this frame.
+    No visual geometry needed, but a tiny sphere is included so it's
+    visible in RViz2 as a reference point for the cube's rotation.
+  -->
+  <link name="reference_link">
+    <visual>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <!--
+    imu_link: the cube representing the physical IMU/sensor body.
+    Its orientation is meant to be driven live at runtime by a
+    tf2_ros broadcaster node publishing reference_link -> imu_link,
+    based on incoming /imu/data quaternion values.
+  -->
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="orange">
+        <color rgba="1.0 0.5 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0"
+               izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!--
+    reference_to_imu_joint: connects reference_link to imu_link.
+    Defined as 'fixed' with identity origin as a placeholder —
+    the LIVE rotation is expected to come from a tf2_ros broadcaster
+    node at runtime, not from this static joint definition.
+    NOTE (open item, not yet resolved): robot_state_publisher may
+    also auto-publish this same transform from the 'fixed' joint,
+    which could conflict with the broadcaster node publishing the
+    same reference_link -> imu_link transform. To be revisited in
+    URDF v2.
+  -->
+  <joint name="reference_to_imu_joint" type="fixed">
+    <parent link="reference_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>
